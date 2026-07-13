@@ -7,3 +7,5 @@ tables/*.tex
 figs/*.pdf
 figs/*.png
 *.log
+bundles/*/
+!bundles/README.md

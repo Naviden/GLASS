@@ -1,111 +1,140 @@
-# GLASS — reproducibility package
+# GLASS
 
-Code and instructions to reproduce every table and figure in
-*"GLASS: A Closed-Form Encoder-Geometric Detector for Machine-Generated Text."*
+A closed-form, encoder-geometric detector for machine-generated text.
 
-GLASS scores a document by the difference between its squared residual to a human
-subspace and the smallest squared residual to a library of per-generator AI subspaces,
-all obtained in closed form by truncated SVD on a frozen sentence encoder:
+GLASS scores a document by comparing how far it sits from a *human* subspace against
+how far it sits from the nearest *generator* subspace, in the embedding space of a
+frozen sentence encoder:
 
 ```
-s_det(x) = r(x; S_H) − min_g r(x; S_A_g)
+s_det(x) = r(x; S_H) − min_g r(x; S_A_g)          s_det > 0  ⇒  machine-generated
 ```
 
-No language-model inference, no gradient step, no training at scoring time.
+Both subspaces are obtained in closed form by truncated SVD. **Scoring a document is
+one encoder pass plus a few matrix–vector products** — no language-model inference, no
+gradient step, no training at scoring time. It takes ~0.2 ms per document and runs
+fine on a CPU.
 
-**Start here: [`REPRODUCE.md`](REPRODUCE.md)** — every table and figure in the paper
-maps to exactly one command, with the expected numbers next to it.
+Paper: *"GLASS: A Closed-Form Encoder-Geometric Detector for Machine-Generated Text"*
+(Information Processing & Management, 2026).
 
 ---
 
-## What you need
+## Use GLASS
 
-**Hardware.** One CUDA GPU. Most steps fit in 24 GB. Two steps need ~28 GB because they
-hold two Falcon-7B models at once (Binoculars: observer + performer) — on a 24 GB card,
-run those as the separate second pass described in `REPRODUCE.md`. A full reproduction is
-roughly **10–14 GPU-hours**, dominated by the Falcon-7B and RADAR passes over the
-cross-corpus sets; GLASS itself is a few minutes.
+No GPU. No training. No API key.
 
-**Software.**
+```bash
+pip install torch transformers numpy        # that's all GLASS needs
+# download the fitted bundle (~20 MB) from this repo's Releases into bundles/
+```
+
+```python
+from glass import GLASS
+
+g = GLASS.load("bundles/v3_english_clean")
+
+g.is_ai("The proliferation of large language models has fundamentally ...")
+# True
+
+g.score(["document one ...", "document two ..."])
+# array([ 41.7, -18.2 ])      # > 0 = machine-generated
+
+g.explain("...")
+# {'s_det': 41.7, 'is_ai': True, 'nearest_generator': 'openai/gpt-4o',
+#  'n_words': 312, 'reliable': True, ...}
+```
+
+Or from the command line:
+
+```bash
+python glass.py --text "The quick brown fox ..."
+python glass.py --file article.txt
+cat article.txt | python glass.py
+python glass.py --file 'docs/*.txt' --json
+```
+
+**Two things to know before you trust a score.**
+
+* **GLASS is a document-level detector.** Accuracy is near chance below ~50 words and
+  reaches ~0.999 beyond 400 (paper, Table 17). `explain()` returns
+  `reliable: False` and a warning for short inputs — heed it. Do not use GLASS on
+  sentence-length snippets.
+* **Detection is not limited to the 18 generators in the library.** The score is the
+  distance to the *nearest* known generator subspace, so text from models GLASS has
+  never seen is still detected — that is the cross-corpus result the paper is about.
+  The `nearest_generator` field is a hint, not an attribution claim.
+
+---
+
+## Reproduce the paper
+
+This is the part that needs a GPU — **not because of GLASS, but because of the
+baselines** we compare against (Falcon-7B for Fast-DetectGPT / log-rank / DNA-GPT,
+two Falcon-7Bs for Binoculars, RADAR, RoBERTa detectors). GLASS itself is minutes.
+
+**[`REPRODUCE.md`](REPRODUCE.md) maps every table and figure in the paper to exactly
+one command, and states the number you should get.**
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+bash run_all.sh 2>&1 | tee run_all.log        # ~10–14 GPU-hours end to end
 ```
+
+Every reproduced value is printed as `RESULT[...]` so it can be diffed against the paper.
 
 **Data.** Public corpora (HC3, TuringBench, MAGE, NYT, the AI-text-detection Pile,
-OpenTuringBench) download automatically from the HuggingFace Hub on first use. RAID is
-fetched by `src/build_raid_english.py`. The **frontier-EN generations** — 18
-instruction-tuned models × five domain-stratified panels — are released as a data
-artifact alongside this package (`results_v2/openrouter_en_s{0..4}/per_doc.jsonl`);
-re-generating them requires an OpenRouter key and will not reproduce the paper's
-documents byte-for-byte, since they were sampled at temperature 0.7.
+OpenTuringBench) download from the HuggingFace Hub on first use. The **frontier-EN
+generations** — 18 instruction-tuned models × five domain-stratified panels — ship as a
+data artifact alongside this repo; regenerating them needs an OpenRouter key and will
+*not* reproduce the paper's documents byte-for-byte (they were sampled at temperature
+0.7), only its numbers.
 
-Some HuggingFace models are gated (Llama, Gemma — used by the PROFILER baseline only).
-Run `huggingface-cli login` if you want that row.
+**One bundle determines everything.** Every GLASS number in the paper comes from
+`v3_english_clean`, fit once in Stage 1: 18 per-generator subspaces plus one human
+subspace, fit on junk-filtered data. Build that and the rest is determined.
 
----
+Two text-quality thresholds appear and are **not interchangeable**:
 
-## Layout
-
-```
-src/            all scripts (37)
-REPRODUCE.md    table/figure -> command, with expected values   <- the important file
-run_all.sh      runs the whole pipeline end to end
-requirements.txt
-tables/         generated .tex  (created by the runs)
-figs/           generated .pdf  (created by the runs)
-```
-
-Generated at run time (not shipped): `.cache/glass_production/` (fitted bundles),
-`.cache/pipeline/` (attribution embeddings), `results_v2/` (per-run parquet/JSON).
+| | |
+|---|---|
+| **min 40 words** | *fitting* — data hygiene; drops corrupted/boilerplate/sub-sentence fragments while keeping all eight RAID domains |
+| **min 100 words** | *cross-corpus evaluation only* — a deployment-regime document filter, fixed in advance, applied identically to **every** detector. It is a property of the evaluation set, not of GLASS. What happens *below* it is not hidden: Table 17 / Figure 6 sweep length down to 25 words. |
 
 ---
 
-## The one thing that matters for reproducibility
+## What GLASS does not do
 
-Every GLASS number in the paper comes from **one fitted bundle**, built once in Stage 1:
+Stated here as plainly as in the paper, so no number surprises you:
 
-```
-.cache/glass_production/v3_english_clean
-```
-
-18 per-generator subspaces + one human subspace, fit on junk-filtered data. If you build
-this bundle and nothing else changes, every downstream number is determined.
-
-Two text-quality thresholds appear, and conflating them will give you the wrong numbers:
-
-* **min 40 words — fitting.** Data hygiene: removes corrupted, boilerplate and
-  sub-sentence fragments while keeping all eight RAID domains intact.
-* **min 100 words — cross-corpus evaluation only.** A deployment-regime document filter,
-  fixed in advance and applied **identically to every detector**. It is a property of the
-  evaluation set, not of GLASS. What happens *below* that threshold is not hidden: it is
-  reported explicitly in Table 17 / Figure 6, which sweep document length down to 25 words.
-
----
-
-## Honest notes
-
-These are in the paper and repeated here so nobody is surprised by a number:
-
-* **GLASS wins no individual cross-corpus benchmark.** It is first on the aggregate
-  (best mean *and* best worst-case AUC of eight detectors) because it is the only method
-  with no blind spot; every competitor falls below 0.49 on at least one corpus.
-* **GLASS loses the paraphrase column** (0.811, seventh of eight). A paraphraser is a
+* **It wins no individual cross-corpus benchmark.** It is first on the aggregate — best
+  mean *and* best worst-case AUC of eight detectors — because it is the only method with
+  no blind spot. Every competitor falls below 0.49 on at least one corpus.
+* **It loses the paraphrase column** (0.811, seventh of eight). A paraphraser is a
   generator with no subspace in the library, so it pulls text toward the human subspace.
-  The cross-corpus paraphrase result is also *confounded* in the opposite direction —
-  re-generating AI text through a T5 model makes it **more** detectable to token-based
-  methods, which is why their AUC rises. It is not a clean evasion test.
-* **Accuracy scales with length.** Near chance below ~50 words, 0.999 beyond 400. GLASS
-  is a document-level detector; we recommend against its use on sentence-length text.
+  (That cross-corpus paraphrase test is also confounded in the *opposite* direction:
+  re-generating AI text through a T5 model makes it *more* detectable to token-based
+  methods, which is why their scores go up. It is not a clean evasion test.)
+* **It degrades on short text**, as above.
 * **Attribution is a byproduct, not a contribution.** GAS beats a Ghostbuster-style
   attributor 2.6× but trails a fine-tuned RoBERTa classifier — the expected
   training-free/trained trade-off.
 
+## Layout
+
+```
+glass.py         use GLASS (inference; CPU, no training)   <- start here
+REPRODUCE.md     table/figure -> command -> expected value  <- reproduction
+run_all.sh       full pipeline, end to end
+src/             all 37 scripts behind the paper
+bundles/         fitted bundle (download from Releases)
+```
+
 ## Incomplete — do not publish yet
 
-`REPRODUCE.md` lists two files that are **not** in this package and must be added before
-release: `profiler_on_our_data.py`, and the script behind Tables 1–2 (intrinsic-dimension
-gap and K-scaling law). They are flagged rather than quietly omitted.
+`REPRODUCE.md` flags two files that must be added before release: `profiler_on_our_data.py`,
+and the script behind Tables 1–2 (intrinsic-dimension gap, K-scaling law).
 
 ## Citation
 
