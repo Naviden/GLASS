@@ -118,14 +118,3 @@ bundles/         fitted bundle (download from Releases)
 
 `REPRODUCE.md` flags two files that must be added before release: `profiler_on_our_data.py`,
 and the script behind Tables 1–2 (intrinsic-dimension gap, K-scaling law).
-
-## Citation
-
-```bibtex
-@article{glass2026,
-  title   = {{GLASS}: A Closed-Form Encoder-Geometric Detector for Machine-Generated Text},
-  author  = {De Santo, Alessia and Mercorio, Fabio and Nobani, Navid and Pallucchini, Filippo},
-  journal = {Information Processing \& Management},
-  year    = {2026}
-}
-```
