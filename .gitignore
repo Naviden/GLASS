@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.cache/
+results_v2/
+tables/*.tex
+figs/*.pdf
+figs/*.png
+*.log

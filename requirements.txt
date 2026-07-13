@@ -1,0 +1,22 @@
+# GLASS reproducibility package.
+# Python 3.12 (3.10+ works). Install into a fresh venv:
+#   python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+#
+# A CUDA build of torch is required for the Falcon-7B / RADAR / Binoculars baselines.
+# GLASS itself needs only the DeBERTa encoder and numpy.
+
+torch>=2.1
+transformers>=4.40
+datasets>=2.18
+huggingface-hub>=0.22
+sentencepiece>=0.1.99        # DeBERTa-v3 tokenizer
+accelerate>=0.28
+
+numpy>=1.24
+scipy>=1.11
+pandas>=2.0
+pyarrow>=14.0                # parquet
+scikit-learn>=1.3            # LogisticRegression / RandomForest / isotonic / roc_auc
+
+matplotlib>=3.7              # figures
+rich>=13.0                   # progress UI in the newer scripts
