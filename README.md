@@ -104,23 +104,6 @@ Two text-quality thresholds appear and are **not interchangeable**:
 
 ---
 
-## What GLASS does not do
-
-Stated here as plainly as in the paper, so no number surprises you:
-
-* **It wins no individual cross-corpus benchmark.** It is first on the aggregate — best
-  mean *and* best worst-case AUC of eight detectors — because it is the only method with
-  no blind spot. Every competitor falls below 0.49 on at least one corpus.
-* **It loses the paraphrase column** (0.811, seventh of eight). A paraphraser is a
-  generator with no subspace in the library, so it pulls text toward the human subspace.
-  (That cross-corpus paraphrase test is also confounded in the *opposite* direction:
-  re-generating AI text through a T5 model makes it *more* detectable to token-based
-  methods, which is why their scores go up. It is not a clean evasion test.)
-* **It degrades on short text**, as above.
-* **Attribution is a byproduct, not a contribution.** GAS beats a Ghostbuster-style
-  attributor 2.6× but trails a fine-tuned RoBERTa classifier — the expected
-  training-free/trained trade-off.
-
 ## Layout
 
 ```
