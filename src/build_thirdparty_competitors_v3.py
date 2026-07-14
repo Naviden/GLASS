@@ -366,6 +366,21 @@ def main():
     y_of = {name: np.array([1] * len(ai) + [0] * len(hum)) for name, (ai, hum) in corpora.items()}
     texts_of = {name: (ai + hum) for name, (ai, hum) in corpora.items()}
 
+    # raw[name][detector] = per-document score, ORIENTED so that higher = AI.
+    # Without this the AUCs in the table cannot be given confidence intervals, cannot be
+    # compared against a word-count baseline, and cannot be re-thresholded by length --
+    # every one of which a reviewer asked for. Keep the per-doc scores, always.
+    raw = {name: {} for name in corpora}
+
+    def put(name, det, s, flip=False):
+        """Record a detector's per-document scores AND its AUC from the same array."""
+        s = np.asarray(s, dtype=float)
+        if flip:
+            s = -s
+        raw[name][det] = s
+        scores[name][det] = auc_of(s, y_of[name])
+        return scores[name][det]
+
     # ---- export identical test docs for external detectors, then exit ----
     if args.dump_originals:
         import json as _json
@@ -380,7 +395,7 @@ def main():
     print(f"[bundle] S_H + {len(SA)} per-generator subspaces (K={args.K}, whitened)")
     for name in corpora:
         X = encode(texts_of[name], args.encoder, device=dev)
-        scores[name]["GLASS"] = auc_of(glass_score(X, SH, SA, WH), y_of[name])
+        put(name, "GLASS", glass_score(X, SH, SA, WH))
         print(f"  [GLASS|{name}] AUC = {scores[name]['GLASS']:.4f}")
 
     # ---- Falcon family: Fast-DetectGPT, log-rank, (Binoculars) ----
@@ -397,11 +412,10 @@ def main():
                 if m2 is not None: bino.append(falcon_binoc(t, m1, m2, ftok, dev))
                 if (i + 1) % 200 == 0: print(f"  falcon[{name}] {i+1}/{len(T)}", end="\r")
             print()
-            y = y_of[name]
-            scores[name]["Fast-DetectGPT"] = auc_of(np.array(fdg), y)         # higher = AI
-            scores[name]["log-rank"] = auc_of(-np.array(lrk), y)              # flip -> higher = AI
+            put(name, "Fast-DetectGPT", fdg)                                   # higher = AI
+            put(name, "log-rank", lrk, flip=True)                              # flip -> higher = AI
             if m2 is not None:
-                scores[name]["Binoculars"] = auc_of(-np.array(bino), y)       # flip -> higher = AI
+                put(name, "Binoculars", bino, flip=True)                       # flip -> higher = AI
             print(f"  [Falcon|{name}] FDGPT={scores[name]['Fast-DetectGPT']:.4f} "
                   f"log-rank={scores[name]['log-rank']:.4f}"
                   + (f" Binoc={scores[name]['Binoculars']:.4f}" if m2 is not None else ""))
@@ -415,8 +429,7 @@ def main():
         rtok = AutoTokenizer.from_pretrained(args.roberta)
         rmdl = AutoModelForSequenceClassification.from_pretrained(args.roberta).to(dev).eval()
         for name in corpora:
-            s = np.array([roberta_p(t, rmdl, rtok, dev) for t in texts_of[name]])
-            scores[name]["RoBERTa-OpenAI"] = auc_of(s, y_of[name])
+            put(name, "RoBERTa-OpenAI", [roberta_p(t, rmdl, rtok, dev) for t in texts_of[name]])
             print(f"  [RoBERTa|{name}] AUC = {scores[name]['RoBERTa-OpenAI']:.4f}")
         del rmdl; torch.cuda.empty_cache()
 
@@ -426,8 +439,7 @@ def main():
         dtok = AutoTokenizer.from_pretrained(args.radar_model)
         dmdl = AutoModelForSequenceClassification.from_pretrained(args.radar_model).to(dev).eval()
         for name in corpora:
-            s = np.array([roberta_p(t, dmdl, dtok, dev) for t in texts_of[name]])
-            scores[name]["RADAR"] = auc_of(s, y_of[name])
+            put(name, "RADAR", [roberta_p(t, dmdl, dtok, dev) for t in texts_of[name]])
             print(f"  [RADAR|{name}] AUC = {scores[name]['RADAR']:.4f}")
         del dmdl; torch.cuda.empty_cache()
 
@@ -438,12 +450,17 @@ def main():
             dname, mid = spec.split(":", 1)
             tok = AutoTokenizer.from_pretrained(mid)
             mdl = AutoModelForSequenceClassification.from_pretrained(mid).to(dev).eval()
-            aucs = {name: auc_of(np.array([roberta_p(t, mdl, tok, dev) for t in texts_of[name]]), y_of[name])
+            s_of = {name: np.array([roberta_p(t, mdl, tok, dev) for t in texts_of[name]])
                     for name in corpora}
-            if np.nanmean(list(aucs.values())) < 0.5:                       # flip orientation
-                aucs = {name: 1.0 - a for name, a in aucs.items()}
+            aucs = {name: auc_of(s_of[name], y_of[name]) for name in corpora}
+            # Orientation is decided ONCE, globally, from the mean AUC -- and the flip is
+            # applied to the per-document scores, not just to the AUC, so the dump and the
+            # table can never disagree.
+            flip = np.nanmean(list(aucs.values())) < 0.5
             for name in corpora:
-                scores[name][dname] = aucs[name]; print(f"  [{dname}|{name}] AUC = {aucs[name]:.4f}")
+                put(name, dname, s_of[name], flip=flip)
+                print(f"  [{dname}|{name}] AUC = {scores[name][dname]:.4f}"
+                      + ("  (orientation flipped)" if flip else ""))
             del mdl; torch.cuda.empty_cache()
 
     # ---- external per-doc scores (detector run via its OWN repo), SAME test docs ----
@@ -455,15 +472,17 @@ def main():
             for line in open(fpath, encoding="utf-8"):
                 d = _json.loads(line)
                 if d["corpus"] in by: by[d["corpus"]][int(d["idx"])] = float(d["score"])
-            aucs = {}
+            s_of, aucs = {}, {}
             for name in corpora:
                 nt = counts[name][0] + counts[name][1]
-                aucs[name] = auc_of(np.array([by[name].get(i, np.nan) for i in range(nt)]), y_of[name])
+                s_of[name] = np.array([by[name].get(i, np.nan) for i in range(nt)])
+                aucs[name] = auc_of(s_of[name], y_of[name])
             fin = [a for a in aucs.values() if np.isfinite(a)]
-            if fin and np.nanmean(fin) < 0.5:
-                aucs = {name: (1.0 - a if np.isfinite(a) else a) for name, a in aucs.items()}
+            flip = bool(fin and np.nanmean(fin) < 0.5)
             for name in corpora:
-                scores[name][dname] = aucs[name]; print(f"  [{dname}|{name}] AUC = {aucs[name]:.4f}")
+                put(name, dname, s_of[name], flip=flip)
+                print(f"  [{dname}|{name}] AUC = {scores[name][dname]:.4f}"
+                      + ("  (orientation flipped)" if flip else ""))
 
     # ---- Ghostbuster: LR trained ONCE on the RAID library, then frozen ----
     if args.with_ghostbuster:
@@ -488,8 +507,7 @@ def main():
         clf = LogisticRegression(max_iter=2000, class_weight="balanced").fit(sc.transform(Xtr), ytr)
         for name in corpora:
             Xc = gb_matrix(texts_of[name])
-            p = clf.predict_proba(sc.transform(Xc))[:, 1]
-            scores[name]["Ghostbuster"] = auc_of(p, y_of[name])
+            put(name, "Ghostbuster", clf.predict_proba(sc.transform(Xc))[:, 1])
             print(f"  [Ghostbuster|{name}] AUC = {scores[name]['Ghostbuster']:.4f}")
         for mm, _ in gmods: del mm
         torch.cuda.empty_cache()
@@ -511,6 +529,40 @@ def main():
                         "n_ai": counts[name][0], "n_hum": counts[name][1]})
     Path(args.out_parquet).parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rec).to_parquet(args.out_parquet)
+
+    # ---------------- per-document dump: EVERY downstream number comes from here ----------
+    # One row per test document: its corpus, label, word count, and each detector's score
+    # (already oriented so higher = AI). This is what makes bootstrap CIs, the word-count
+    # baseline and the length-threshold sweep derivable from the SAME documents as the
+    # table above -- rather than from a second, differently-sampled run.
+    pd_rows = []
+    for name in corpora:
+        T = texts_of[name]
+        for i, t in enumerate(T):
+            r = {"corpus": name, "idx": i, "label": int(y_of[name][i]),
+                 "wlen": len(t.split())}
+            for d in dets:
+                r[d] = float(raw[name][d][i]) if d in raw[name] else np.nan
+            pd_rows.append(r)
+    P = pd.DataFrame(pd_rows)
+    perdoc_path = args.out_parquet.replace(".parquet", "_perdoc.parquet")
+    P.to_parquet(perdoc_path)
+    print(f"[perdoc] {len(P)} documents x {len(dets)} detectors -> {perdoc_path}")
+
+    # ---- word-count baseline: is this benchmark measuring provenance, or length? -------
+    # A corpus where document length alone separates AI from human cannot discriminate
+    # detectors, no matter how good they look on it. Report it next to the detectors.
+    print("\n[length-confound audit] AUC of a WORD-COUNT-ONLY 'detector':")
+    for name in corpora:
+        x = P[P.corpus == name]
+        a = auc_of(x.wlen.values.astype(float), x.label.values)
+        best = max((scores[name][d] for d in dets if np.isfinite(scores[name].get(d, np.nan))),
+                   default=np.nan)
+        a2, direction = (a, "longer=AI") if a >= 0.5 else (1.0 - a, "shorter=AI")
+        warn = "   <-- CONFOUNDED: length alone rivals the detectors" if a2 >= 0.85 else ""
+        print(f"  [word-count|{name}] AUC = {a2:.4f} ({direction})   "
+              f"best detector = {best:.4f}{warn}")
+        print(f"RESULT[wordcount {name}] auc={a2:.4f} best_detector={best:.4f}")
 
     col = "l" + "c" * len(dets)
     L = ["% Cross-corpus frozen-bundle generalization, ALL detectors "

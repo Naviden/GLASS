@@ -150,8 +150,10 @@ class GLASS:
             "n_words": n_words,
             "reliable": n_words >= MIN_RELIABLE_WORDS,
             "warning": (None if n_words >= MIN_RELIABLE_WORDS else
-                        f"only {n_words} words: GLASS is a document-level detector and "
-                        f"is unreliable below ~{MIN_RELIABLE_WORDS} words (paper, Table 17)"),
+                        f"only {n_words} words: GLASS is a document-level detector. Its "
+                        f"accuracy rises with length in every corpus we measured, and it "
+                        f"has not been validated below ~{MIN_RELIABLE_WORDS} words -- "
+                        f"treat this score as unvalidated, not as known-bad (see AUDIT.md)"),
         }
 
     @property
