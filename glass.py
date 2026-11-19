@@ -1,42 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-glass.py — use GLASS to detect machine-generated text.
+"""GLASS inference with a frozen encoder and fitted subspaces.
 
-This is the inference path. It needs NO GPU, NO language-model inference, and NO
-training: scoring a document is one forward pass through a frozen sentence encoder
-plus a handful of matrix-vector products.
-
-    s_det(x) = r(x; S_H) - min_g r(x; S_A_g)
-
-where r(x; S) is the squared residual of the whitened embedding x to the low-rank
-subspace S. s_det > 0 => machine-generated.
-
-Library use
------------
-    from glass import GLASS
-    g = GLASS.load("bundles/v3_english_clean")      # ~20 MB, CPU is fine
-    g.score(["some text", "another text"])          # -> array of s_det
-    g.is_ai("some text")                            # -> True / False
-    g.explain("some text")                          # -> which generator it looks like
-
-Command line
-------------
-    python glass.py --text "The quick brown fox..."
-    python glass.py --file article.txt
-    cat article.txt | python glass.py
-    python glass.py --file docs/*.txt --json
-
-Note on document length: GLASS is a DOCUMENT-level detector. Accuracy is near chance
-below ~50 words and rises to ~0.999 beyond 400 (see the paper, Table 17). It warns
-you when a document is too short to score reliably.
+The score is the squared residual to the human subspace minus the minimum
+squared residual to a generator subspace. Positive values indicate machine-
+generated text at the default threshold. See README.md for installation and usage.
 """
 from __future__ import annotations
 import argparse, glob as _glob, json, sys
 from pathlib import Path
 import numpy as np
 
-MIN_RELIABLE_WORDS = 100          # below this, GLASS warns (see paper, Table 17)
+MIN_RELIABLE_WORDS = 100          # length check, not a confidence estimate
 
 
 def _residual_sq(X, mean, B):
@@ -67,7 +42,7 @@ class GLASS:
         if not b.exists():
             raise FileNotFoundError(
                 f"bundle not found: {b}\n"
-                "Download the fitted bundle from the repository releases, or build it "
+                "Extract v3_english_clean.zip into bundles/, or build it "
                 "yourself with src/build_subspace_v2_english.py (see REPRODUCE.md)."
             )
         wh = np.load(b / "whitener.npz")
@@ -131,8 +106,7 @@ class GLASS:
     def explain(self, text):
         """Score one document and say which generator's subspace it sits closest to.
 
-        The nearest generator is a hint, not an attribution claim: see Appendix B of
-        the paper -- GAS is a byproduct, and a fine-tuned classifier attributes better.
+        The nearest subspace does not establish the document's source.
         """
         X = self.embed([text])
         Xw = (X - self.w_mean) @ self.W.T
@@ -150,24 +124,20 @@ class GLASS:
             "n_words": n_words,
             "reliable": n_words >= MIN_RELIABLE_WORDS,
             "warning": (None if n_words >= MIN_RELIABLE_WORDS else
-                        f"only {n_words} words: GLASS is a document-level detector. Its "
-                        f"accuracy rises with length in every corpus we measured, and it "
-                        f"has not been validated below ~{MIN_RELIABLE_WORDS} words -- "
-                        f"treat this score as unvalidated, not as known-bad (see AUDIT.md)"),
+                        f"Input has {n_words} words; scores below "
+                        f"{MIN_RELIABLE_WORDS} words are unvalidated."),
         }
 
     @property
     def generators(self):
-        """The generators in the library (what GLASS has seen). Detection is NOT
-        limited to these -- the score uses the distance to the NEAREST subspace, so
-        unseen generators are still detected (that is the cross-corpus result)."""
+        """Return the generator identifiers represented in the fitted bundle."""
         return list(self.S_A)
 
 
 # ------------------------------------------------------------------------ CLI --
 def main():
     ap = argparse.ArgumentParser(
-        description="GLASS: detect machine-generated text. No GPU or training needed.")
+        description="GLASS: score text using a frozen encoder and fitted subspaces.")
     ap.add_argument("--bundle", default="bundles/v3_english_clean",
                     help="fitted bundle directory (default: bundles/v3_english_clean)")
     ap.add_argument("--text", help="score this string")

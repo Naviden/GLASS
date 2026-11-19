@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
-# GLASS — full reproduction, end to end.
-#
-#   bash run_all.sh 2>&1 | tee run_all.log
-#
-# Assumes: results_v2/openrouter_en_s{0..4}/per_doc.jsonl  (released generations)
-#          results_v2/raid_en_humans.parquet               (src/build_raid_english.py)
-# Everything else downloads from the HuggingFace Hub on first use.
-#
-# ~10-14 GPU-hours. Every step prints the numbers the paper reports.
-# See REPRODUCE.md for the table-by-table map and expected values.
-# =============================================================================
+# Experiment sequence. Additional inputs are required; see REPRODUCE.md.
 set -euo pipefail
 
 BUNDLE=.cache/glass_production/v3_english_clean
@@ -41,7 +30,7 @@ python3 src/build_subspace_v2_english.py --clean-text \
 # ---------------------------------------------------------------- STAGE 2 ----
 say "STAGE 2/4  Main results (Tables 6-17, Figures 5-6)"
 
-echo "--- Tables 6 & 13: headline / strict-FPR  (expect GLASS AUC .9992, TPR .9737)"
+echo "--- Tables 6 & 13: detection / strict-FPR  (expect GLASS AUC .9992, TPR .9737)"
 for s in 0 1 2 3 4; do
   python3 src/glass_eval_panel.py --clean-text \
       --jsonl results_v2/openrouter_en_s${s}/per_doc.jsonl --humans "$HUM" \
@@ -147,8 +136,8 @@ python3 src/build_wallclock_v3.py
 python3 src/build_transfer_directed_v3.py
 python3 src/build_attack_boxplot.py
 
-say "DONE — tables/ and figs/ now hold every table and figure in the paper."
-echo "Compare the RESULT[...] lines above against the expected values in REPRODUCE.md."
+say "Experiment sequence finished."
+echo "Interpret outputs using the evaluation notes in REPRODUCE.md."
 echo
 echo "NOT run here (needs the PROFILER repo + gated HF models):"
 echo "  python3 src/profiler_english_v3.py     --profiler-root <PROFILER_REPO>"
