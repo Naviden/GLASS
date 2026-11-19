@@ -1,20 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-make_long_cache.py
-==================
-Filter an existing gas.py cache to documents with >= --min-words words, WITHOUT
-re-encoding (reuses the cached embeddings, aligned by index). Attribution over
-random-length text conflates GLASS's known length-sensitivity with generator
-identity; this restricts the attribution set to GLASS's operating range.
-
-Writes corpus_<dst>.json + emb_<dst>_<alias>.npy into the SAME cache dir the
-attribution scripts read from (default ~/glass/.cache/pipeline), so no path
-juggling.
-
-Run (turing):
-    python3 make_long_cache.py --min-words 200            # frontier_en_clean -> frontier_en_long
-"""
+"""Filter cached documents and aligned embeddings by minimum word count."""
 from __future__ import annotations
 import argparse, json, collections
 from pathlib import Path

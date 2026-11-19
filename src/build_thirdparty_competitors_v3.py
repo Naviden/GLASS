@@ -1,36 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_thirdparty_competitors_v3.py
-==================================
-Cross-corpus (frozen-bundle) generalization for ALL detectors -- the multi-method
-version of tab_thirdparty. The frozen v3_english GLASS bundle and every competitor
-are scored on the SAME out-of-distribution corpora (HC3, TuringBench, MAGE), each
-of which supplies its OWN AI and human text (both the generators AND the human
-sources differ from RAID). Nothing is refit on the target corpora; nothing is
-invented.
-
-Detectors (identical implementations / score orientations to the in-library and
-leave-one-generator-out tables):
-  * GLASS           frozen v3_english subspaces, whitened residual gap.
-  * Fast-DetectGPT  Falcon-7b conditional-curvature z-score.
-  * log-rank        Falcon-7b mean log-rank (sign flipped: higher = AI).
-  * Binoculars      Falcon-7b / Falcon-7b-instruct cross-perplexity ratio (flipped).
-  * RoBERTa-OpenAI  GPT-2 detector P(machine).
-  * Ghostbuster     gpt2+distilgpt2 features -> LR trained ONCE on the RAID frontier
-                    library (+RAID humans), then frozen (never sees the target corpus).
-For each corpus we score n AI + n human docs AS PROVIDED and report AUC. No GLASS
-component is re-estimated, and our own 18 generators are NOT used to make text here.
-
-Run (turing, ~/glass/paper):
-    # GLASS + Fast-DetectGPT/log-rank + RoBERTa + Ghostbuster  (~14GB, one Falcon):
-    CUDA_VISIBLE_DEVICES=0 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-      PYTHONUTF8=1 python3 build_thirdparty_competitors_v3.py \\
-      --bundle .cache/glass_production/v3_english \\
-      --with-falcon --with-roberta --with-ghostbuster
-    # add Binoculars (needs ~30GB free: two Falcon-7B):
-    ... --with-falcon --with-binoculars --with-roberta --with-ghostbuster
-"""
+"""Compare frozen-bundle GLASS and baseline detectors on external corpora."""
 from __future__ import annotations
 import argparse, json, glob, tempfile, zipfile
 from pathlib import Path
@@ -369,7 +339,7 @@ def main():
     # raw[name][detector] = per-document score, ORIENTED so that higher = AI.
     # Without this the AUCs in the table cannot be given confidence intervals, cannot be
     # compared against a word-count baseline, and cannot be re-thresholded by length --
-    # every one of which a reviewer asked for. Keep the per-doc scores, always.
+    # Keep per-document scores for these analyses.
     raw = {name: {} for name in corpora}
 
     def put(name, det, s, flip=False):

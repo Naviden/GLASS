@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_extra_panels.py   (rich UI)
-=================================
-Generate AI text from ADDITIONAL, eval-disjoint generators on the RAID prompts to
-legitimately expand GLASS's subspace library (no eval text / eval generators used).
-Writes per_doc.jsonl panels to results_v2/extra_en_<gen>/ (kept in the *en* glob).
+"""Generate additional RAID prompt panels with the OpenRouter API.
 
-    OPENROUTER_API_KEY=sk-... python3 build_extra_panels.py \
-        --models "anthropic/claude-sonnet-4.5,google/gemini-2.5-flash,x-ai/grok-4.20,deepseek/deepseek-v3.2" \
-        --per-domain 200
-"""
+Requires OPENROUTER_API_KEY and an explicit --models list."""
 from __future__ import annotations
 import os, warnings
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

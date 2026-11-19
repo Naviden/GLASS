@@ -1,25 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_subspace_v2_english.py
-============================
-Build a NEW GLASS subspace bundle (default version 'v2_english') whose AI side
-is fit on the EIGHT English RAID domains, pooling the five English stratified
-panels' generations, and whose human side S_H is fit on the English RAID humans.
-
-Mirrors glass_production_fit.py's bundle layout so product_eval.py loads it as a
-drop-in:
-    <out-root>/<version>/
-        S_H_universal.npz        (mean, basis [d x K_max], svals)   -- raw/unwhitened
-        whitener.npz             (mean, W [d x d])                  -- ZCA
-        subspaces/S_A_<gen>.npz  per generator                      -- raw/unwhitened
-        meta.json
-
-Run (turing, ~/glass/paper, GPU):
-    python3 build_subspace_v2_english.py \
-        --panels 'results_v2/openrouter_en_s*/per_doc.jsonl' \
-        --humans results_v2/raid_en_humans.parquet
-"""
+"""Fit a Cholesky whitener, human subspace and generator subspaces on English panels."""
 from __future__ import annotations
 import argparse, glob, json, re, time, collections
 from pathlib import Path

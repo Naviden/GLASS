@@ -1,38 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-stratified_prompt_sampling.py
-=============================
-Domain-stratified replacement for `load_prompts_from_raid` in
-openrouter_query.py. Instead of one flat uniform draw
-
-    chosen = rng.choice(len(grouped), size=n, replace=False)
-
-(whose per-domain mix is arbitrary and invites a "cherry-picking" objection),
-this samples a fixed budget *within each RAID domain*, so every domain is
-represented and the panel composition is controlled and reproducible.
-
-Two integration options:
-
-  (A) Drop-in: paste `load_prompts_from_raid` below over the one in
-      openrouter_query.py, and add the two argparse lines from `add_args`.
-      Then run as before but with --stratify and a --seed; vary the seed to
-      get independent panels for a mean +/- std robustness story.
-
-  (B) Standalone manifest: run this file directly to write a prompts manifest
-      (parquet + json) you can diff/inspect or feed to generation:
-        python stratified_prompt_sampling.py \
-            --metadata-path results_v2/raid_metadata.parquet \
-            --n-prompts 200 --alloc equal --seed 0 \
-            --out prompts_stratified_seed0.parquet
-
-Allocation modes:
-  equal        : budget split evenly across domains (best for the rebuttal:
-                 "balanced coverage of all domains"). Leftover from domains
-                 with too few unique prompts is redistributed round-robin.
-  proportional : budget split in proportion to each domain's number of unique
-                 prompts in RAID (matches RAID's natural domain distribution).
-"""
+"""Sample RAID prompts within domains using equal or proportional allocations."""
 from __future__ import annotations
 import argparse
 from collections import Counter

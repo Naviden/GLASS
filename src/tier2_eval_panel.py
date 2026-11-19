@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-tier2_eval_panel.py
-===================
-The heavy three baselines (DetectGPT, DNA-GPT, Ghostbuster) on one English
-panel, scored on the SAME test split as glass_eval_panel / competitor_eval_panel.
-Faithful to the repo (detectgpt.py / dna_gpt.py / ghostbuster_light.py).
-
-  DetectGPT  : K=10 T5-large perturbations, d(x)=(logp_x - mean_pert)/std_pert
-  DNA-GPT    : K=10 Falcon regenerations, mean 4-gram overlap with true suffix
-  Ghostbuster: 28-dim (gpt2+distilgpt2) log-prob/log-rank features + LR head
-
-Run (turing, ~/glass/paper, GPU, ~2h for one panel):
-    python3 tier2_eval_panel.py --jsonl results_v2/openrouter_en_s0/per_doc.jsonl \
-        --humans results_v2/raid_en_humans.parquet --seed 0 \
-        --out results_v2/tier2_en_s0.json
-"""
+"""Evaluate DetectGPT, DNA-GPT and Ghostbuster on the GLASS panel test split."""
 from __future__ import annotations
 import argparse, json, re
 import numpy as np

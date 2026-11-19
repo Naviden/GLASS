@@ -1,27 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_per_domain_v3.py
-======================
-Domain-stratified detection on the English panels (v3): GLASS + the full
-baseline set, broken down by the eight English RAID domains, mean+-std over
-the five panels.
-
-Detectors (same as the headline table):
-  GLASS            frozen v3_english bundle (higher = AI)
-  Fast-DetectGPT   Falcon-7B analytic z-score
-  log-rank         Falcon-7B (score = -mean log-rank; higher = AI)
-  RoBERTa-OpenAI   supervised P(machine)
-  Ghostbuster      gpt2+distilgpt2 log-prob features + in-panel LR
-  DNA-GPT          Falcon-7B regeneration  (SLOW; only with --dna)
-
-Domain comes from the RAID humans parquet (auto-detected column).
-
-Run (turing, ~/glass/paper, venv, GPU; pin a free GPU):
-  CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-    PYTHONUTF8=1 python3 build_per_domain_v3.py            # all but DNA-GPT
-  ... --dna                                                # add DNA-GPT (hours)
-"""
+"""Evaluate GLASS and baseline detectors separately for each English RAID domain."""
 from __future__ import annotations
 import argparse, json, glob, collections
 from pathlib import Path

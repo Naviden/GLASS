@@ -1,24 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_glass_crossdomain.py   (rich UI, GLASS-only, fast)
-========================================================
-GLASS is 1.000 on all 8 in-distribution RAID domains, so its cross-corpus dips
-are distribution-shift, not content-genre. This script answers the real
-question: OUT of distribution, which content GENRE does GLASS fail on most?
-
-It keeps the per-record genre labels that the pooled loaders throw away:
-  * HC3   -> field "source"  (reddit_eli5, open_qa, wiki_csai, medicine, finance)
-  * MAGE  -> field "src"     (xsum, yelp, cmv, eli5, wp, squad, sci_gen, ...)
-
-For each genre: GLASS AUC (higher=better) and human false-positive rate, sorted
-worst genre first. GLASS-only so it runs in ~5 min (DeBERTa encode, no Falcon).
-
-Run (turing, ~/glass/paper, venv, GPU):
-  PYTHONUTF8=1 TRANSFORMERS_VERBOSITY=error TOKENIZERS_PARALLELISM=false \
-  PYTHONWARNINGS=ignore python3 build_glass_crossdomain.py \
-      --bundle .cache/glass_production/v3_clean_pruned [--clean-text]
-"""
+"""Evaluate frozen-bundle detection by corpus and content domain."""
 from __future__ import annotations
 import os, warnings, time
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

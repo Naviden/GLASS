@@ -1,19 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_attack_boxplot.py  (BBC bbplot-style)
-===========================================
-Box plots of cross-corpus detection under attack. Reads the per-(corpus, attack,
-detector) AUCs from build_thirdparty_attack_v3.py and draws one panel per attack
-stage (Clean / Character / Paraphrase). Because there are only THREE corpora
-(HC3, TuringBench, MAGE), each box spans just 3 points -- so the three individual
-corpus AUCs are overlaid as labelled dots, and a chance line is drawn at 0.5.
-Nothing is aggregated away.
-
-Run:
-    python3 build_attack_boxplot.py
-    python3 build_attack_boxplot.py --stages clean,character   # drop paraphrase
-"""
+"""Plot per-corpus detector AUC under clean, character-edit and paraphrase conditions."""
 from __future__ import annotations
 import argparse
 from pathlib import Path

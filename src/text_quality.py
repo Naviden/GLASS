@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-text_quality.py
-===============
-General text-quality gate, applied UNIFORMLY to every detector and every corpus
-(and to the subspace-fitting data). Removes the non-prose junk that the FP
-analysis exposed, on generic criteria only -- not tuned to any detector:
-
-  * too short          -> sub-sentence quips (HC3/MAGE Reddit one-liners)
-  * low stopword ratio -> corrupted / stopword-stripped text (TuringBench news)
-  * highly repetitive  -> templated boilerplate (NYT "Slideshow controls" captions)
-
-Import and use:  from text_quality import is_clean, filter_pair
-"""
+"""Filter short, corrupted, repetitive and boilerplate text using shared quality criteria."""
 from __future__ import annotations
 import re
 

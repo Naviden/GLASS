@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-make_pruned_bundle.py
-=====================
-Copy a GLASS bundle and drop specified generator subspaces (e.g. human-adjacent
-ones flagged by build_subspace_ablation.py). No re-encoding: subspaces are
-independent, so scoring simply takes min over the remaining S_A_*.npz. S_H and the
-whitener are unchanged, so frontier detection is unaffected by construction.
-
-    python3 make_pruned_bundle.py \
-        --src .cache/glass_production/v3_diverse \
-        --dst .cache/glass_production/v3_diverse_nocohere \
-        --exclude cohere,cohere-chat
-"""
+"""Copy a fitted bundle while removing selected generator subspaces."""
 from __future__ import annotations
 import argparse, json, shutil
 from pathlib import Path

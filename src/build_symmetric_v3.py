@@ -1,27 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_symmetric_v3.py
-=====================
-RE-DO of tab_symmetric on English (v3_english) for GLASS vs OTB-supervised.
-PROFILER is added separately (profiler_on_our_data, English test) because it
-is a 6-10h 6-LLM job.
-
-Test set = the five English stratified panels (held-out 20% of titles):
-panel AI vs paired English RAID humans. All detectors see the IDENTICAL test
-docs per seed.
-
-  GLASS         : frozen v3_english bundle, whitened best-of residual.
-  OTB-supervised: 8-class LR (Human + 7 OLLMs) on frozen DeBERTa-v3-base
-                  embeddings; trained on OpenTuringBench train AI + English
-                  RAID humans; P(AI)=1-P(Human).
-
-Outputs tables_v2/tab_symmetric_v3.tex (GLASS + OTB rows; PROFILER row left
-as a TODO line until its run finishes).
-
-Run (turing, ~/glass/paper, venv, GPU):
-    python3 build_symmetric_v3.py
-"""
+"""Compare GLASS and an OpenTuringBench-trained classifier on English panels."""
 from __future__ import annotations
 import argparse, json, glob
 from pathlib import Path

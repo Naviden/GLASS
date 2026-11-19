@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_ablations_v3.py
-=====================
-RE-DO of two detection ablations on English (frozen v3_english bundle),
-both fast re-scores (no new model encoding):
-
-  tab_k_ablation_v3   : GLASS detection AUC as the subspace rank K varies,
-                        showing K=10 is within delta of the best K.
-  tab_redundancy_v3   : detection AUC as random generators are dropped from
-                        the library (library-redundancy / saturation check).
-
-Test set = the five English panels' held-out 20% of titles (panel AI vs
-paired English RAID humans), whitened best-of residual scored against the
-frozen v3_english bundle.
-
-Run (turing, ~/glass/paper, venv, GPU):
-    PYTHONUTF8=1 python3 build_ablations_v3.py
-"""
+"""Evaluate subspace rank and generator-library ablations."""
 from __future__ import annotations
 import argparse, json, glob
 from pathlib import Path

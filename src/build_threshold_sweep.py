@@ -1,26 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_threshold_sweep.py   (rich UI, CPU-only, seconds)
-=======================================================
-REVIEWER POINT 4: "the >=100-word filter is a ranking-relevant choice that favours
-GLASS ... report how the Table 11 ranking changes at alternative thresholds (e.g.
->=50, >=200 words), so readers can see whether the 'no blind spot' claim is
-threshold-robust rather than threshold-induced."
-
-This answers it directly and needs NO new scoring: build_length_effect.py already
-dumped every document's score under all eight detectors together with its word
-count and corpus (results_v2/length_effect_perdoc.parquet). We simply re-filter
-that table at each threshold and recompute the per-corpus AUCs.
-
-For each threshold we report, per detector: the five per-corpus AUCs, the MEAN, the
-WORST case, and the RANK on each. If GLASS's first place survives >=50 and >=200,
-the claim is threshold-robust. If it does not, we say so and restate the claim as
-conditional. The point of the experiment is to find out, not to confirm.
-
-Run (CPU is fine):
-    python3 build_threshold_sweep.py
-"""
+"""Compare detector rankings at alternative minimum document lengths."""
 from __future__ import annotations
 import argparse
 from pathlib import Path
@@ -79,7 +59,7 @@ def main():
 
     # ---- the answer: does GLASS's rank survive the threshold? ----
     summary = Table(title="Cross-corpus ranking vs the word-count threshold "
-                          "(reviewer 4: is the claim threshold-robust?)")
+                          "(sensitivity to minimum document length)")
     for c in ["threshold", "n docs", "detector", "mean AUC", "rank(mean)",
               "worst AUC", "rank(worst)"]:
         summary.add_column(c, justify="right")
@@ -125,7 +105,7 @@ def main():
                           "on the document-length regime. Report this honestly."))
 
     L = ["% Cross-corpus ranking as a function of the minimum-word-count threshold.",
-         "% Reviewer 4: is 'best mean and best worst-case' threshold-robust or threshold-induced?",
+         "% Detector rankings across minimum document lengths.",
          "% Reproduced by: build_threshold_sweep.py (CPU, uses length_effect_perdoc.parquet)",
          "\\begin{table}[!htbp]\\centering\\small",
          "\\caption{\\textbf{Sensitivity of the cross-corpus ranking to the document-length "

@@ -1,25 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-extract_raid_native.py
-======================
-Extract RAID's OWN machine generations (English domains, clean / no-attack) into
-per-generator panels, so GLASS's library can be diversified beyond the 18 frontier
-models with older / different-era generators (GPT-2, GPT-3, ChatGPT, Cohere, MPT,
-LLaMA-chat, Mistral, ...). Writes the same per_doc.jsonl schema that
-build_subspace_v2_english.py consumes:
-    {"model": <gen>, "title": <t>, "response": <text>, "domain": <dom>}
+"""Extract English, unattacked RAID machine generations as additional generator panels.
 
-IMPORTANT (integrity): several RAID generators (chatgpt, gpt2, gpt3) share a model
-FAMILY with the cross-corpus evaluation corpora (HC3=ChatGPT, TuringBench=GPT-2/3).
-Adding them to the library makes those corpora partly IN-library, so any cross-corpus
-gain must be read together with report_library_overlap.py. This is a diversity
-ABLATION, not a swap of the headline bundle.
-
-Run (turing, ~/glass/paper):
-    python3 extract_raid_native.py --cap-per-gen 1600
-    # -> results_v2/raid_native_en/per_doc.jsonl
-"""
+Some generator families overlap with evaluation corpora; use these panels only in labelled ablations."""
 from __future__ import annotations
 import argparse, json, math, collections
 from pathlib import Path

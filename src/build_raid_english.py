@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_raid_english.py  (v2: captures RAID's real prompts)
-=========================================================
-Stream liamdugan/raid (train) and extract the eight English domains. For each
-(domain, title) we grab RAID's GENUINE prompt from a machine row (human rows
-carry no prompt; AI rows do), so nothing is synthesised. Writes:
-
-  raid_en_humans.parquet   one row per unique human document
-                           (id, source_id, domain, title, prompt, text)
-  raid_en_prompts.parquet  unique (domain, title, prompt) prompt pool
-
-The console prints prompt coverage so we know immediately whether RAID ships
-real prompts (then we use them) or stores them empty (then they come from
-RAID's own templates and we fetch those instead).
-
-Run from ~/glass/paper:
-    python3 build_raid_english.py --cap-per-domain 5000
-"""
+"""Extract English RAID human documents and associated prompts by domain and title."""
 from __future__ import annotations
 import argparse
 import collections

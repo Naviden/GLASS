@@ -1,29 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_transfer_directed_v3.py
-=============================
-DIRECTED test of Theorem 1 (not the symmetric dual already in the paper).
-
-Theorem 1 (matched filter, isotropic-Gaussian model):
-    AUC_tr(i -> j) = Phi( cbar_ij * Phi^{-1}( AUC_ii ) )
-where the classifier is the matched filter  w_i = mu_{A_i} / ||mu_{A_i}||
-trained on generator i vs human, AUC_ii is its self (in-distribution) AUC,
-and cbar_ij is the mean canonical correlation (mean cosine of principal
-angles) between the two generator subspaces.
-
-This script MEASURES AUC_tr(i->j) directly for every ordered pair and
-compares it to the value PREDICTED from cbar_ij and AUC_ii, reporting
-Pearson r, MAE, RMSE, and a calibration slope. Writes a results parquet,
-a paste-ready scatter (optional), and tables/tab_transfer_directed.tex.
-
-Everything is whitened with the v3_english whitener so the human class is
-~isotropic (the theorem's premise). NOTHING is invented.
-
-Run (turing, ~/glass/paper, venv, GPU; pin a free GPU):
-    CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-      PYTHONUTF8=1 python3 build_transfer_directed_v3.py
-"""
+"""Compare directed matched-filter transfer with predictions from subspace principal angles."""
 from __future__ import annotations
 import argparse, glob, json, re
 from pathlib import Path

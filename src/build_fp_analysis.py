@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_fp_analysis.py   (rich UI)
-================================
-Where does GLASS false-flag humans (s_det>0)? Per corpus: FP rate, whether FP
-humans differ in length, which AI subspace catches them (argmin), and a dump of
-the top FP human texts (the ones GLASS most confidently calls AI) so we can read
-what kind of writing fools S_H.
-"""
+"""Analyse false-positive rates, document length and nearest-generator subspaces."""
 from __future__ import annotations
 import os, warnings
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

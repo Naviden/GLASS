@@ -1,38 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_paraphrase_audit.py   (rich UI, CPU is fine, ~10 min)
-===========================================================
-Tests a suspicion about OUR OWN attack implementation.
-
-Both build_thirdparty_attack_v3.py and build_stress_v2.py paraphrase with:
-
-    enc = tok(chunk, truncation=True, max_length=256, ...)     # INPUT  truncated
-    g   = mdl.generate(**enc, max_length=256, ...)             # OUTPUT capped
-
-The AI side is therefore not merely paraphrased -- it is TRUNCATED to ~256 T5
-tokens (~190 words). The human side is left clean and full length. On an evaluation
-set of documents >= 100 words with a long tail (NYT runs 400-1000+), this
-manufactures a length-label confound: after the "attack", AI is short and human
-is long.
-
-That would explain the implausible result we published: a paraphrase is supposed to
-make detection HARDER, yet RADAR went 0.796 -> 0.996, OpenAI-large 0.793 -> 0.979,
-RoBERTa-OpenAI 0.714 -> 0.952. Detectors do not get BETTER under attack. What they
-got was a "shorter => AI" shortcut.
-
-If that is what happened, then "GLASS loses the paraphrase attack" -- a limitation
-currently stated in the paper, the README and the abstract -- is an artifact of our
-own attack code, not a property of GLASS.
-
-This script measures it three ways:
-  (1) how much text the paraphraser destroys (words in -> words out),
-  (2) the word-count-only AUC of paraphrased-AI vs clean-human (the confound itself),
-  (3) the same, with a LENGTH-PRESERVING paraphrase (chunked, nothing truncated),
-      which is what the attack should have been.
-
-Run:  python3 build_paraphrase_audit.py --n 150
-"""
+"""Measure truncation and length confounds in the paraphrase evaluation."""
 from __future__ import annotations
 import argparse, re
 import numpy as np

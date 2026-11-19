@@ -1,29 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_frontier_en_corpus.py
-===========================
-Phase 0 of the V3 rebuild: register a NEW gas.py corpus `frontier_en`
-(English frontier panels + English RAID humans, DeBERTa-v3-base) in the
-.cache/pipeline cache, so every gas.py-based attribution/ablation table
-re-runs on CORRECT English data with fresh (correct) subspaces, instead
-of the code/Czech/German `frontier_50`.
-
-Writes (gas.py layout):
-    .cache/pipeline/corpus_frontier_en.json         {labels, gens, texts}
-    .cache/pipeline/emb_frontier_en_deberta-v3-base.npy
-
-AI side: the 5 English stratified panels pooled, deduped by (model,title),
-         labelled by their generating model (the attribution classes).
-Human side: English RAID humans (label 0, gen "Human").
-
-After this:
-    python3 gas.py --corpus frontier_en --alias deberta-v3-base
-yields the English attribution summary / OOD / calibration partials.
-
-Run (turing, ~/glass/paper, venv, GPU):
-    PYTHONUTF8=1 python3 build_frontier_en_corpus.py
-"""
+"""Cache English generation panels, human documents and encoder embeddings for attribution."""
 from __future__ import annotations
 import argparse, glob, json, collections
 from pathlib import Path

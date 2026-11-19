@@ -1,20 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_stress_v2.py
-==================
-RE-DO of tab_stress_profile on English with the v2_english bundle.
+"""Evaluate detection under character edits and paraphrasing.
 
-Takes an English frontier panel's test AI documents (the generators the
-v2_english bundle knows), applies attacks, and scores GLASS (frozen v2_english
-best-of residual) and Fast-DetectGPT per stage; AI-under-attack vs clean humans.
-
-Stages: clean | character-edit | paraphrase (humarin) | [dipper, with --dipper].
-Emits tables_v2/tab_stress_profile_v2.tex.
-
-Run (turing, ~/glass/paper, GPU, venv):
-    python3 build_stress_v2.py --jsonl results_v2/openrouter_en_s0/per_doc.jsonl
-"""
+Paraphrasing truncates machine-generated text; human documents remain intact."""
 from __future__ import annotations
 import argparse, json, random
 from pathlib import Path

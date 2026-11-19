@@ -1,25 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-make_v2_tables.py
-=================
-Build the RE-DO detection tables for the English / v2_english results, one .tex
-per table, from the per-panel result JSONs.
-
-Reads (whatever exists):
-    results_v2/competitors_en_s*.json   # GLASS + Fast-DetectGPT + log-rank +
-                                        # RoBERTa (+Binoculars +log-perplexity)
-    results_v2/tier2_en_s*.json         # DetectGPT, DNA-GPT, Ghostbuster
-
-Writes:
-    tables_v2/tab_headline_v2.tex       # AUC + TPR@1%FPR, mean+-std, all detectors
-    tables_v2/tab_strict_fpr_v2.tex     # TPR@1%FPR focus
-
-Prints which RE-DO tables still need their own runs (symmetric, stress,
-third-party, ablations) and what each needs.
-
-Run (turing):  python3 make_v2_tables.py
-"""
+"""Build detection and strict-FPR tables from per-panel result files."""
 from __future__ import annotations
 import glob, json, collections, statistics as st
 from pathlib import Path

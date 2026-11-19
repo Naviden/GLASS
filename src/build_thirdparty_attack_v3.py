@@ -1,30 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_thirdparty_attack_v3.py
-=============================
-Cross-corpus detection UNDER ATTACK, all detectors. Extends the frozen-bundle
-cross-corpus comparison (HC3 / TuringBench / MAGE) with the SAME predefined
-adversarial attacks used in the in-library stress test (Table~stress): the AI side
-is perturbed by (a) a character-level edit (homoglyph + transposition + space /
-duplication, faithful to build_stress_v2.py) and (b) Humarin T5 paraphrase. Humans
-are left clean. Every detector is re-scored on attacked-AI vs clean-human, per
-corpus, per attack.
+"""Evaluate frozen-bundle and baseline detectors under cross-corpus perturbations.
 
-This is reported ALONGSIDE the clean cross-corpus table (tab:thirdparty), not in
-place of it. Attacks are fixed in advance; all detectors and all attacks are
-reported regardless of outcome. Nothing is invented.
-
-Detectors / scorers / orientations are identical to build_thirdparty_competitors_v3.py.
-
-Run (turing, ~/glass/paper):
-    CUDA_VISIBLE_DEVICES=0 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-      PYTHONUTF8=1 python3 build_thirdparty_attack_v3.py \\
-      --bundle .cache/glass_production/v3_english \\
-      --with-falcon --with-roberta --with-ghostbuster \\
-      --attacks clean,character,paraphrase
-    # add Binoculars (needs ~30GB free): ... --with-binoculars
-"""
+Paraphrasing truncates machine-generated text; human documents remain intact."""
 from __future__ import annotations
 import argparse, json, glob, tempfile, zipfile, random
 from pathlib import Path

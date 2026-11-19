@@ -1,27 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_calibration_v3.py
-=======================
-RE-DO of tab_calibration on English (frozen v3_english bundle): Brier score
-and 10-bin ECE for GLASS detection probabilities under three calibrators,
-on the English panels. Self-contained (no new model loading).
-
-Per panel: score the frozen v3 bundle on the held-out 20% test split
-(panel AI vs paired English RAID humans), split that test set 50/50 into a
-calibration half and an evaluation half. Fit each calibrator on the
-calibration half, report Brier + ECE on the evaluation half.
-
-Calibrators:
-  Uncalibrated : sigmoid of the z-scored detection score
-  Platt        : 1-D logistic regression on the score
-  Isotonic     : isotonic regression on the score
-
-Writes tables_v2/tab_calibration_v3.tex (mean$\\pm$std over five panels).
-
-Run (turing, ~/glass/paper, venv, GPU):
-    PYTHONUTF8=1 python3 build_calibration_v3.py
-"""
+"""Evaluate probability calibration on separate calibration and evaluation splits."""
 from __future__ import annotations
 import argparse, json, glob
 from pathlib import Path

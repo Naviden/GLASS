@@ -1,19 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_ghostbuster_attr_v3.py
-============================
-RE-DO of tab_ghostbuster on English (frontier_en): Ghostbuster-style multi-LM
-log-probability features + multinomial logistic regression for N-way generator
-attribution, vs closed-form GAS on the same split.
-
-Features per doc: mean / std / min / slope of token log-probs under gpt2 and
-distilgpt2 (the same multi-LM primitive the paper's Ghostbuster baseline uses),
-concatenated.
-
-Writes tables_v2/tab_ghostbuster_v3.tex.
-Run: python3 build_ghostbuster_attr_v3.py     (~1-2 h GPU)
-"""
+"""Compare Ghostbuster-style log-probability features with GAS for generator attribution."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path

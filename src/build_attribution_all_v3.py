@@ -1,25 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_attribution_all_v3.py   (rich UI)
-=======================================
-ONE table, ONE shared split: GAS vs fine-tuned RoBERTa vs Ghostbuster for N-way
-generator attribution on the >=200-word frontier panel (frontier_en_long).
-
-Every method is fit and scored on the IDENTICAL stratified train/test split, so
-GAS reports a single number that reconciles across the whole comparison (fixes
-the earlier issue where each script rolled its own split and GAS came out
-differently). Reuses the exact implementations already in the repo:
-  GAS          -> build_ghostbuster_attr_v3.GAS   (closed-form, no training)
-  RoBERTa      -> build_roberta_attr_v3.roberta_attr (fine-tuned roberta-base)
-  Ghostbuster  -> build_ghostbuster_attr_v3.lm_feats (gpt2+distilgpt2) + LR
-
-Run (turing, ~/glass/paper, venv, GPU):
-    CUDA_VISIBLE_DEVICES=1 PYTHONUTF8=1 TRANSFORMERS_VERBOSITY=error \\
-    TOKENIZERS_PARALLELISM=false PYTHONWARNINGS=ignore \\
-    python3 build_attribution_all_v3.py --corpus frontier_en_long
-~35 min (RoBERTa fine-tunes per N; Ghostbuster LM features once).
-"""
+"""Compare GAS, RoBERTa and Ghostbuster attribution on a shared stratified split."""
 from __future__ import annotations
 import os, warnings
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-profiler_english_v3.py
-======================
-PROFILER (faithful method) evaluated on the ENGLISH panels, for the PROFILER
-row of tab_symmetric_v3. Reuses the tested machinery in profiler_on_our_data.py
-(PROFILER-Code training + 6-LLM context-loss features + RF) and only swaps the
-TEST corpus from the code/Czech/German frontier_50 to the English frontier_en
-corpus (AI vs English RAID humans).
+"""Evaluate PROFILER detection on English panels.
 
-Binary Turing-Test metric only (AI vs Human) — comparable to GLASS/OTB in the
-symmetric table. Resumable per-LLM via the feature cache.
-
-Run (turing, ~/glass/paper, venv, GPU, HF auth for gated Llama/gemma):
-    screen -S profen
-    PYTHONUTF8=1 python3 profiler_english_v3.py --profiler-root ~/glass/paper/Profiler
-
-~6-10 h. Writes results_v2/profiler_english.json + tables_v2/tab_symmetric_v3_PROFILER.txt
-"""
+Requires profiler_on_our_data.py and an external PROFILER checkout."""
 from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path

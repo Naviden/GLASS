@@ -1,20 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_wallclock_v3.py
-=====================
-Measure GLASS per-document scoring throughput with the v3_english bundle
-(18 subspaces), to back the GLASS row of tab_wallclock. Reports ms/doc and
-docs/sec for: one DeBERTa-v3-base encoder pass + whitening + (|L|+1)
-low-rank residual projections. Also reports the one-time fit cost (whitener
-+ all SVDs).
-
-Competitor rows in the table are inference-cost estimates (number of LLM
-forward passes per document x measured throughput), documented as such.
-
-Run (turing, ~/glass/paper, venv, GPU; pin a free GPU):
-    CUDA_VISIBLE_DEVICES=1 PYTHONUTF8=1 python3 build_wallclock_v3.py
-"""
+"""Measure encoder, whitening and subspace-scoring throughput."""
 from __future__ import annotations
 import argparse, json, glob, time
 from pathlib import Path

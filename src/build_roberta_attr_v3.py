@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_roberta_attr_v3.py
-========================
-RE-DO of tab_gas_vs_roberta + attribution_headtohead on English (frontier_en):
-fine-tuned RoBERTa-base N-way generator attribution vs closed-form GAS, same
-train/test split.
-
-Writes:
-  tables_v2/tab_gas_vs_roberta_v3.tex   (GAS vs fine-tuned RoBERTa top-1)
-  tables_v2/attribution_headtohead_v3.tex (GAS vs RoBERTa, no-training note)
-
-Reads gas cache: corpus_frontier_en.json (texts/labels/gens) +
-emb_frontier_en_<alias>.npy (for GAS).
-
-Run: python3 build_roberta_attr_v3.py        (~30-60 min GPU)
-"""
+"""Compare fine-tuned RoBERTa and GAS attribution on a shared train/test split."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path

@@ -1,29 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_glass_on_otb_v3.py
-========================
-Evaluate the FROZEN v3_english GLASS bundle as a detector on OpenTuringBench
-(OTB) test splits -- GLASS scored on someone else's benchmark, no refitting.
-Writes tables/tab_glass_on_otb.tex.
+"""Evaluate a frozen bundle on OpenTuringBench AI encodings against RAID human negatives.
 
-OTB's encoded splits are AI-only (7 generators, no human class), and OTB ships
-no parallel human set. So the shared NEGATIVE (human) class is the RAID-EN human
-pool used elsewhere in the paper -- encoded once and reused across splits. This
-is disclosed in the caption (humans are RAID-EN, not OTB-native).
-
-Per split we report machine-vs-human AUC and TPR@1%FPR under the best-of-library
-whitened residual. NOTHING is invented: every cell is computed here.
-
-Bias caveat (baked into the caption): 2 of OTB's 7 in-domain generators
-(Llama-3.1-8B, Qwen-2.5-7B) have matching subspaces in the v3_english library;
-the other 5 and the unseen-model split do not. The out-of-distribution /
-unseen-model split is the only strictly unseen-generator test.
-
-Run (turing, ~/glass/paper, venv, GPU; pin a free GPU):
-    CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-      PYTHONUTF8=1 python3 build_glass_on_otb_v3.py
-"""
+The human negatives share their source corpus with the fitted human subspace."""
 from __future__ import annotations
 import argparse, glob, re
 from pathlib import Path

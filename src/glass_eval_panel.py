@@ -1,28 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-glass_eval_panel.py
-===================
-End-to-end GLASS detection eval for ONE English stratified panel.
-
-Given a panel's OpenRouter generations (per_doc.jsonl) and the English RAID
-human pool (raid_en_humans.parquet), it:
-  1. pairs each title's real RAID human document with the panel's AI docs,
-  2. splits 80/20 by title (no title leaks across train/test),
-  3. encodes everything once with DeBERTa-v3-base (mean-pooled),
-  4. fits a whitened human subspace S_H on a disjoint background human pool and
-     a per-generator subspace S_A_g on each model's train docs (rank k),
-  5. scores test docs by s_det(x)=r(x;S_H)-min_g r(x;S_A_g) (best-of-library),
-  6. reports AUC and TPR@1%FPR (+ a bootstrap 95% CI).
-
-Faithful to the paper's method: fit_subspace = top-k right singular vectors;
-residual = squared distance to subspace; whitening = Cholesky/Mahalanobis on the
-human pool (matches glass_variants.py).
-
-Run (on turing, from ~/glass/paper, GPU):
-    python3 glass_eval_panel.py --jsonl results_v2/openrouter_en_s0/per_doc.jsonl \
-        --humans results_v2/raid_en_humans.parquet --out results_v2/glass_en_s0.json
-"""
+"""Fit and evaluate GLASS on an English panel using a title-based train/test split."""
 from __future__ import annotations
 import argparse, json
 import numpy as np

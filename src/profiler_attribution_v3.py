@@ -1,25 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-profiler_attribution_v3.py   (rich UI)
-======================================
-GAS vs PROFILER for N-way GENERATOR ATTRIBUTION on the length-restricted English
-frontier panel (>=200 words, GLASS's operating range). PROFILER is used as an
-ATTRIBUTOR here (its real purpose) -- not the binary detector of
-profiler_english_v3.py: we extract PROFILER's 6-LLM context-loss features for the
-frontier AI docs and train an N-way RandomForest over the generators, then compare
-top-1 attribution to closed-form GAS on the SAME train/test split.
+"""Compare PROFILER and GAS generator attribution.
 
-Both methods are fit on the same frontier generators and evaluated on the same
-held-out docs. GAS is training-free (SVD subspaces); PROFILER trains an RF on its
-6-LLM features -- the fair "training-free vs dedicated attributor" comparison.
-
-Run (turing, ~/glass/paper, venv, GPU, HF auth for gated Llama/gemma; use screen):
-    screen -S profattr
-    PYTHONUTF8=1 python3 profiler_attribution_v3.py \
-        --profiler-root ~/glass/paper/Profiler --corpus frontier_en_long
-~6-10h (6-LLM feature extraction dominates; resumable via the feature cache).
-"""
+Requires profiler_on_our_data.py and an external PROFILER checkout."""
 from __future__ import annotations
 import os, warnings
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

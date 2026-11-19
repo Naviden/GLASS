@@ -1,31 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_logo_detection_v3.py
-==========================
-LEAVE-ONE-GENERATOR-OUT (LOGO) detection, multi-seed -- the cherry-pick-proof
-unseen-generator benchmark on the English frontier-EN panels.
-
-Every one of the 18 frontier generators is held out in turn (no chosen block),
-over several split seeds. For held-out generator g:
-  * GLASS's library = the other 17 generators (g has no subspace -> unseen).
-  * Ghostbuster's LR is retrained on the other 17 generators (+humans) -> g unseen.
-  * Zero-shot baselines (Fast-DetectGPT, log-rank, Binoculars) and RoBERTa-OpenAI
-    train on no frontier model -> g unseen by construction.
-All detectors are scored on the identical held-out docs (g's test docs vs held-out
-humans). We report mean$\\pm$std over the 18 held-out generators x N seeds.
-
-Efficiency: the heavy per-document scores (DeBERTa embeddings; Falcon
-Fast-DetectGPT/log-rank/Binoculars; RoBERTa; gpt2/distilgpt2 Ghostbuster features)
-do NOT depend on the split, so they are computed ONCE over all documents and then
-aggregated per (seed, held-out generator). Only the cheap fits (GLASS SVDs,
-Ghostbuster LR) are repeated per fold. NOTHING is invented.
-
-Run (turing, ~/glass/paper; GPU ~30GB free if --with-binoculars):
-    CUDA_VISIBLE_DEVICES=0 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-      PYTHONUTF8=1 python3 build_logo_detection_v3.py \\
-      --seeds 0,1,2,3,4 --with-falcon --with-binoculars --with-roberta --with-ghostbuster
-"""
+"""Evaluate leave-one-generator-out detection across generators and split seeds."""
 from __future__ import annotations
 import argparse, glob, json
 from pathlib import Path

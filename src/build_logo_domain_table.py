@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_logo_domain_table.py
-==========================
-Per-DOMAIN leave-one-generator-out detection table: rows = Overall + each RAID
-domain, columns = detectors (AUC mean over the held-out generators x seeds within
-that domain). Shows the domain structure explicitly; the seed count is stated in
-the caption. Reads the parquets written by build_logo_detection_v3.py.
-
-Run (anywhere with the parquets; CPU, instant):
-    python3 build_logo_domain_table.py
-"""
+"""Summarise leave-one-generator-out detection by RAID domain."""
 from __future__ import annotations
 import argparse
 from pathlib import Path

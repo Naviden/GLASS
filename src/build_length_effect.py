@@ -1,33 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_length_effect.py   (rich UI, all 8 detectors, pooled)
-===========================================================
-Detection AUC as a function of DOCUMENT LENGTH, pooled across the five
-cross-corpus benchmarks (HC3, TuringBench, MAGE, NYT, Pile). This is the
-capstone that quantifies GLASS's one failure mode: it should be the steepest
-riser -- near/below chance on the shortest documents, crossing the others and
-leading past ~100-200 words.
+"""Measure detector AUC across document-length bins.
 
-Every detector is scored on the SAME pooled documents (uniform, fair). We keep
-short real texts (the point of the experiment) and drop only boilerplate + long
-corrupted text: the stopword/uniqueness corruption checks are applied only to
-docs >= 30 words, so genuine short sentences survive.
-
-Outputs:
-  figs/fig_length_effect.pdf / .png   -- AUC vs length-bin, one line per detector
-  tables/tab_length_effect.tex         -- backing table
-  results_v2/length_effect.csv         -- per (bin, detector) AUC + counts
-
-Run (turing, ~/glass/paper, a FREE 48GB GPU; two Falcons for Binoculars):
-  CUDA_VISIBLE_DEVICES=1 PYTHONUTF8=1 TRANSFORMERS_VERBOSITY=error \\
-  TOKENIZERS_PARALLELISM=false PYTHONWARNINGS=ignore PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \\
-  python3 build_length_effect.py \\
-      --bundle .cache/glass_production/v3_english_clean \\
-      --panels 'results_v2/openrouter_en_s*/per_doc.jsonl' --humans results_v2/raid_en_humans.parquet \\
-      --with-falcon --with-binoculars --with-roberta --with-radar --with-ghostbuster \\
-      --hf-detector "OpenAI-large:openai-community/roberta-large-openai-detector"
-"""
+Bin composition can vary by corpus; use build_length_audit_v2.py for within-corpus analysis."""
 from __future__ import annotations
 import os, warnings
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

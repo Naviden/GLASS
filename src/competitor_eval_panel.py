@@ -1,27 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-competitor_eval_panel.py
-========================
-Run competitor detectors on the SAME English-panel test split that
-glass_eval_panel.py uses, so the comparison is head-to-head on identical docs.
-
-Detectors (on the test set = AI docs of held-out titles vs their paired humans):
-  - Fast-DetectGPT (analytic, Falcon-7B)      [paper's strongest zero-shot]
-  - log-rank (Falcon-7B)
-  - RoBERTa-OpenAI (supervised GPT-2 detector)
-  - (optional) Binoculars, with --binoculars  [loads a second Falcon]
-
-The Falcon scorer and RoBERTa scorer are byte-for-byte the repo's
-score_falcon_extras / roberta score_doc. GLASS's own row is read from the
-glass_en_s<seed>.json written by glass_eval_panel.py.
-
-Run (turing, ~/glass/paper, GPU; ~few min for Falcon over the test docs):
-    python3 competitor_eval_panel.py \
-        --jsonl results_v2/openrouter_en_s0/per_doc.jsonl \
-        --humans results_v2/raid_en_humans.parquet \
-        --glass-json results_v2/glass_en_s0.json --seed 0
-"""
+"""Evaluate Fast-DetectGPT, log-rank and RoBERTa on the GLASS panel test split."""
 from __future__ import annotations
 import argparse, json
 import numpy as np

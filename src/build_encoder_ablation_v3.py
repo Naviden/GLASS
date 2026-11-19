@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_encoder_ablation_v3.py
-============================
-RE-DO of tab_encoder_ablation on English: GLASS detection AUC across encoder
-backbones, re-fit per panel (whitened, K=10) on the English data.
-
-For each encoder and each of the five English panels: hold out 20% of titles
-as test; fit the human subspace S_H on background English RAID humans and a
-per-generator AI subspace on the panel's train-split generations (whitened,
-Cholesky); score test AI vs paired test humans; report AUC.
-
-Encoders: DeBERTa-v3-base (canonical), DeBERTa-v3-large, E5-large-v2.
-
-Writes tables_v2/tab_encoder_ablation_v3.tex (AUC mean$\\pm$std over panels).
-
-Run (turing, ~/glass/paper, venv, GPU):
-    PYTHONUTF8=1 python3 build_encoder_ablation_v3.py
-"""
+"""Compare encoder backbones with subspaces fitted separately for each panel."""
 from __future__ import annotations
 import argparse, json, glob, collections
 from pathlib import Path

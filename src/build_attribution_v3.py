@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_attribution_v3.py
-=======================
-RE-DO of the GAS attribution tables on English (frontier_en corpus):
-
-  tab_frontier_4way_v3      : GAS top-1 attribution accuracy for N-way panels
-                              (N = 4, 8, all), 5-fold CV, chance, x-chance.
-  tab_calibration_sigma_v3  : attribution-probability ECE vs kernel bandwidth
-                              quantile (sigma). NOTE top-1 is bandwidth-invariant
-                              (argmax of -r^2/sigma^2 ignores sigma), so the
-                              sigma effect lives entirely in the probabilities:
-                              we report 10-bin ECE of the max-probability.
-
-Reads .cache/pipeline/corpus_frontier_en.json + emb_frontier_en_<alias>.npy.
-Run (turing, ~/glass/paper, venv):  python3 build_attribution_v3.py
-"""
+"""Evaluate generator attribution and kernel-bandwidth calibration."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path

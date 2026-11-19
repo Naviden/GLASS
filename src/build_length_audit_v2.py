@@ -1,44 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_length_audit_v2.py   (rich UI, CPU-only, ~10 s)
-=====================================================
-Fixes a REAL BUG found while answering reviewer 4.
-
-THE BUG
--------
-build_length_effect.py macro-averaged per-corpus AUCs within each length bin and
-claimed this "controls for corpus composition". It does not, because a corpus with
-too few AI (or human) documents in a bin is silently dropped from that bin's average.
-In this benchmark suite document length is nearly COLLINEAR with corpus:
-
-    HC3          : no documents  >= 400 words        (0 AI docs)
-    NYT          : almost no documents < 200 words
-    Pile         : 16 AI docs >= 200 words, 0 >= 400
-    TuringBench  : 0 documents >= 400 words
-
-so the bins average over DIFFERENT corpora:
-    25-50 w   -> MAGE alone            (GLASS 0.539  <- the "collapse on short text")
-    >=400 w   -> MAGE + NYT            (GLASS 0.800)
-The apparent "AUC rises with length" trend is therefore partly the easy corpora
-(HC3, NYT ~0.99) ENTERING the average as bins get longer. Same for the cumulative
-threshold sweep. Any number that averages across a changing corpus set is not
-comparable to the number in the row above it.
-
-THE FIX (two analyses, both composition-safe)
----------------------------------------------
-A) THRESHOLD SWEEP (reviewer 4): only compare thresholds over the corpora that
-   remain valid at EVERY threshold compared. Corpora that drop out are named, and
-   thresholds where the fixed set collapses are refused rather than reported.
-
-B) LENGTH EFFECT: abandon the cross-corpus macro-average entirely. Report the
-   WITHIN-CORPUS length curve for each detector: does AUC rise or fall with length
-   INSIDE a fixed corpus? That is the causal question, and it is immune to
-   composition. Aggregate it as a within-corpus slope (Kendall tau over the bins a
-   corpus actually spans), so no average is ever taken across different corpus sets.
-
-Run:  python3 build_length_audit_v2.py
-"""
+"""Analyse detection thresholds and length effects within fixed corpus sets."""
 from __future__ import annotations
 import argparse, itertools
 from pathlib import Path
@@ -115,7 +77,7 @@ def main():
     # ==========================================================================
     # A) THRESHOLD SWEEP ON A FIXED CORPUS SET
     # ==========================================================================
-    console.rule("[bold]A. Threshold sweep, fixed corpus set (reviewer 4)")
+    console.rule("[bold]A. Threshold sweep, fixed corpus set")
     # largest run of thresholds sharing a non-trivial corpus set
     comparable = [T for T in TT if len(ok_thr[T]) >= 4]
     fixed = sorted(set.intersection(*[set(ok_thr[T]) for T in comparable]))

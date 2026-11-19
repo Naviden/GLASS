@@ -1,23 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_paper_audit.py   (rich UI, CPU-only, ~1 min)
-==================================================
-Stress-tests EVERY remaining results table in the GLASS paper for the two failure
-modes that have already destroyed three claims:
-
-  (1) LENGTH-LABEL CONFOUND. If word count alone separates AI from human in an
-      evaluation set, that set cannot discriminate detectors. This is what killed
-      the Pile benchmark (word-count AUC 0.999).
-  (2) COMPOSITION DRIFT. If a reported mean averages over a cell set that silently
-      changes between rows (because some cells are missing / not estimable), the
-      rows are not comparable. This is what killed the length-effect table.
-
-Plus the statistics reviewer #5 asked for, which we can now compute for free.
-
-Each section prints a verdict:  CLEAN | CAVEAT | BROKEN
-Nothing here needs a GPU. Nothing here trusts a number I have not recomputed.
-"""
+"""Check length confounds, corpus composition and paired significance in evaluation results."""
 from __future__ import annotations
 import glob, json, sys
 from pathlib import Path
@@ -181,9 +164,9 @@ def audit_logo_grid():
 
 # =========================================================================== 3
 def audit_logo_stats():
-    """Reviewer 5: is GLASS's LOGO lead statistically significant? 90 PAIRED
+    """Paired significance of LOGO differences across 90
     measurements (18 generators x 5 seeds) on identical held-out documents."""
-    console.rule("[bold]3. LOGO -- paired significance (reviewer 5, no new compute)")
+    console.rule("[bold]3. LOGO -- paired significance")
     try:
         L = pd.read_parquet("results_v2/logo_detection_clean.parquet")
     except Exception as e:

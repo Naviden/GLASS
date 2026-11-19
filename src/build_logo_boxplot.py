@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-build_logo_boxplot.py  (BBC bbplot-style)
-=========================================
-Box plots of leave-one-generator-out (unseen-generator) detection, OVERALL and
-PER-DOMAIN, styled after the BBC Visual & Data Journalism cookbook (bbplot):
-BBC palette, bold left title + subtitle, horizontal gridlines only, no spines or
-ticks, clean top legend, source footer. GLASS in BBC red.
-
-Inputs (from build_logo_detection_v3.py):
-  results_v2/logo_detection.parquet           # overall: one AUC/TPR per (seed,gen)
-  results_v2/logo_detection_bydomain.parquet  # long: (seed,gen,domain,detector,auc,tpr)
-
-Run:
-    python3 build_logo_boxplot.py                 # AUC + TPR
-    python3 build_logo_boxplot.py --metric auc
-"""
+"""Plot overall and per-domain leave-one-generator-out detection results."""
 from __future__ import annotations
 import argparse
 from pathlib import Path
